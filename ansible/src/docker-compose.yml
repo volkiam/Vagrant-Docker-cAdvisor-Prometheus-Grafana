@@ -1,0 +1,74 @@
+---
+version: '3.9'
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+
+
+services:
+  grafana:
+    image: grafana/grafana:9.1.1
+    user: root
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - TZ="Europe/Moscow"
+    networks:
+      - default
+    depends_on:
+      - prometheus
+      
+  prometheus:
+    image: prom/prometheus:v2.38.0
+    hostname: prometheus
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+   # extra_hosts:
+   #   - "test-vm-02:host-gateway" #for access from docker container to root host
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+    networks:
+      - default
+    depends_on:
+      - cadvisor
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379

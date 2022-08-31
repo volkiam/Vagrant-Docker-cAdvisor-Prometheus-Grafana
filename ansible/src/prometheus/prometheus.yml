@@ -1,0 +1,34 @@
+global:
+  # How frequently to scrape targets by default.
+  scrape_interval:     15s
+  # How long until a scrape request times out.
+  scrape_timeout:  10s 
+  # How frequently to evaluate rules.
+  evaluation_interval: 15s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'test-vm-02'
+
+
+#A scrape_config section specifies a set of targets and parameters describing how to scrape them. In the general case, one scrape configuration specifies a single job. In advanced configurations, this may change.
+#Targets may be statically configured via the static_configs parameter or dynamically discovered using one of the supported service-discovery mechanisms.
+#Additionally, relabel_configs allow advanced modifications to any target and its labels before scraping.
+
+# A scrape configuration containing exactly one endpoint to scrape.
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          alias: 'prometheus'
+
+  - job_name: 'cadvisor'
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          alias: 'cadvisor'
