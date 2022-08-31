@@ -5,7 +5,7 @@ Next, docker compose creates 4 containers Grafana, Prometheus, cAdvisor, Redis:
 Grafana - receives data from Prometheus and visualizes it on the dashboard.
 Prometheus - receives data from cAdvisor.
 cAdvisor - collects container metrics.
-Redis - does nothing, just is.
+Redis - standard Redis server. cAdvisor will collect container metrics from this container automatically, i.e. without any additional configuration.
 
 Instruction to use (I used Ubuntu 20.04):
 
